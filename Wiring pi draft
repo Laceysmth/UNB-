@@ -1,0 +1,46 @@
+import wiringpi as GPIO
+import time
+import smbus
+
+bus = smbus.SMBus(1)
+BMP390L_ADDR = 0x76
+ 
+START_BUTTON_PIN = 18
+STOP_BUTTON_PIN = 20
+GPIO.wiringPiSetup()
+GPIO.pinMode(START_BUTTON_PIN, GPIO.INPUT)
+GPIO.pullUpDnControl(START_BUTTON_PIN, GPIO.PUD_UP)
+GPIO.pinMode(STOP_BUTTON_PIN, GPIO.INPUT)
+GPIO.pullUpDnControl(STOP_BUTTON_PIN, GPIO.PUD_UP)
+
+def read_sensor_data():
+        data = bus.read_i2c_block_data(BMP390L_ADDR, 0x2E, 6)
+        pressure = ((data[0] << 16) | (data[1] << 8) | data[2]) / 100.0
+        temperature = ((data[3] << 16) | (data[4] << 8) | data[5]) / 100.0
+        return temperature, pressure
+
+def main():
+        is_collecting_data = False
+        while true:
+                start_button_state = GPIO.digitalRead(START_BUTTON_PIN)
+                stop_button_state = GPIO.digitalRead(STOP_BUTTON_PIN)
+
+                if start_button_state == GPIO.LOW and not is_collecting_data:
+                        is_collecting_data = True
+                        print("Data collection started")
+
+                if stop_button_state == GPIO.LOW and is_collecting_data:
+                        is_collecting_data = False
+                        print("Data collection started")
+
+                if is_collecting_data:
+                        temperature, pressure = read_sensor_data()
+                        print(f"Temperature: {temperature} C, Pressure: {pressu>
+                        time.sleep(5)
+time.sleep(0.1)
+
+if __name__ == "__main__":
+        try:
+                main()
+        except KeyboardInterrupt:
+                GPIO.cleanup()
